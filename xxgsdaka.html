@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日打卡</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f8f8;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #07c160;
+            text-align: center;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #07c160;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:active {
+            background-color: #05974a;
+        }
+
+        .stats {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        #history {
+            margin-top: 20px;
+        }
+
+        .record {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>每日打卡</h1>
+        <div class="stats">
+            <p>打卡天数：<span id="days">0</span> 天</p>
+            <p>最近打卡：<span id="lastTime">暂无记录</span></p>
+        </div>
+        <button class="btn" onclick="recordCheckIn()">立即打卡</button>
+        <div id="history">
+            <h3>打卡记录</h3>
+            <div id="records"></div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化本地存储
+        if (!localStorage.checkIns) {
+            localStorage.checkIns = JSON.stringify([]);
+        }
+
+        // 加载历史记录
+        function loadHistory() {
+            const checkIns = JSON.parse(localStorage.checkIns);
+            document.getElementById('days').textContent = checkIns.length;
+            
+            if (checkIns.length > 0) {
+                const lastTime = new Date(checkIns[0].time);
+                document.getElementById('lastTime').textContent = lastTime.toLocaleString();
+            }
+
+            const recordsDiv = document.getElementById('records');
+            recordsDiv.innerHTML = '';
+            checkIns.forEach(record => {
+                const div = document.createElement('div');
+                div.className = 'record';
+                const date = new Date(record.time);
+                div.textContent = `✔ ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+                recordsDiv.appendChild(div);
+            });
+        }
+
+        // 打卡功能
+        function recordCheckIn() {
+            const checkIns = JSON.parse(localStorage.checkIns);
+            const now = new Date();
+            
+            // 检查今天是否已经打卡
+            const today = new Date().toDateString();
+            const hasCheckedToday = checkIns.some(record => 
+                new Date(record.time).toDateString() === today
+            );
+
+            if (!hasCheckedToday) {
+                checkIns.unshift({ time: now.toISOString() });
+                localStorage.checkIns = JSON.stringify(checkIns);
+                loadHistory();
+                alert('打卡成功！');
+            } else {
+                alert('今天已经打卡过了哦！');
+            }
+        }
+
+        // 页面加载时显示记录
+        window.onload = loadHistory;
+    </script>
+</body>
+</html>
